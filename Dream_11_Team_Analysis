@@ -1,0 +1,311 @@
+#!/usr/bin/env python
+# coding: utf-8
+
+# In[1]:
+
+
+import tabula
+import pandas as pd
+
+
+# In[ ]:
+
+
+file = "D:\BLRvsKOL.pdf"
+num_of_pages = 445
+
+dream11_tables = []
+
+for i in range(1, num_of_pages):
+    print(i)
+    temp_dream11_tables = tabula.read_pdf(file, pages=i, multiple_tables=False)
+    dream11_tables.append(temp_dream11_tables[0])
+
+
+# In[3]:
+
+
+dream11_tables_backup = dream11_tables
+
+
+# In[4]:
+
+
+print(dream11_tables[0].head())
+
+
+# In[5]:
+
+
+dream11_tables[0].columns = dream11_tables[0].iloc[0]
+
+
+# In[6]:
+
+
+dream11_tables[0] = dream11_tables[0].drop(0)
+
+
+# In[7]:
+
+
+dream11_tables[0] = dream11_tables[0].reset_index(drop=True)
+
+
+# In[8]:
+
+
+print(dream11_tables[0].head())
+
+
+# In[11]:
+
+
+dream11_table = pd.DataFrame()
+for i in range(1, num_of_pages):
+    dream11_tables[0] = dream11_tables[0].append(dream11_tables[i], ignore_index=True)
+    
+dream11_table = dream11_tables[0]
+
+
+# In[13]:
+
+
+dream11_table.shape
+
+
+# In[14]:
+
+
+dream11_table.head()
+
+
+# In[15]:
+
+
+dream11_table['Player 1 (Captain)'].value_counts()
+
+
+# In[46]:
+
+
+b = dream11_table['Player 1 (Captain)'].value_counts()
+b
+
+
+# In[47]:
+
+
+c = dream11_table['Player 2 (Vice Captain)'].value_counts()
+c
+
+
+# In[54]:
+
+
+d = b.add(c, fill_value=0)
+d.sort_values(ascending=False)
+
+
+# In[94]:
+
+
+dream_team = ['AB de Villiers', 'Chris Morris', 'Aaron Finch', 'Washington Sundar', 'Devdutt Padikkal', 'Andre Russell', 'Shubman Gill', 'Isuru Udana', 'Virat Kohli', 'Mohammed Siraj', 'Yuzvendra Chahal']
+
+
+# In[102]:
+
+
+dream_team_count = 0
+dream_player_count = 0
+i = 0
+for indv_team in dream11_table.index:
+    i += 1
+    #print(i)
+    for indv_player in dream11_table.columns:
+        for dream_player in dream_team:        
+            if dream11_table.iloc[indv_team][indv_player] == dream_player:
+                dream_player_count += 1
+                #print(dream11_table.iloc[indv_team][indv_player], " ", dream_player, " ", dream_player_count)
+    if dream_player_count == 11:
+        dream_team_count += 1
+        print("####################################", dream_team_count)
+    dream_player_count = 0
+
+dream_team_count     
+
+
+# In[85]:
+
+
+team = dream11_table[dream11_table['User (Team)'] == 'TRex46206 (1)']
+team_list = team.loc[24546].values.tolist()
+team_list
+
+
+# In[86]:
+
+
+dream_team_count = 0
+dream_player_count = 0
+for indv_player in team_list:
+    print(indv_player)
+    for dream_player in dream_team:
+        if indv_player == dream_player:
+            dream_player_count += 1
+if dream_player_count == 11:
+    dream_team_count += 1
+    dream_player_count = 0
+print(dream_player_count)    
+dream_team_count
+
+
+# In[67]:
+
+
+team_list = ['Virat Kohli', 'AB de Villiers', 'Aaron Finch', 'Devdutt Padikkal', 'Shubman Gill', 'Tom Banton', 'Nitish Rana', 'Prasidh Krishna', 'Navdeep Saini', 'Andre Russell', 'Chris Morris']
+
+
+# In[32]:
+
+
+player_unique = dream11_tables[0]['Player 1 (Captain)'].unique()
+player_list = player_unique.tolist()
+player_list
+
+
+# In[33]:
+
+
+len(player_list)
+
+
+# In[34]:
+
+
+del player_list[21:27]
+player_list
+
+
+# In[36]:
+
+
+player_list.append('Mohammed Siraj')
+
+
+# In[37]:
+
+
+len(player_list)
+
+
+# In[38]:
+
+
+player_points_table = pd.DataFrame(data=player_list, columns=['Player'])
+player_points_table['Player']
+
+
+# In[39]:
+
+
+player_points_table.insert(loc=1, column='Points', value=[27, 9, 27, 18, 63, 38, 17, 101, 31, 40, 87, 31, 98, 84, 62, -1, 91, 5, 56, 0, 29, 46])
+player_points_table.head()
+
+
+# In[33]:
+
+
+player_points_table.loc[player_points_table['Player'] == 'Jos Buttler']['Points']
+
+
+# In[67]:
+
+
+dream11_tables[0]['Total_Points'] = ""
+
+
+# In[68]:
+
+
+dream11_tables[0].info()
+
+
+# In[114]:
+
+
+all_player_point = 0
+i = 0
+for indv_user in dream11_tables[0].index:
+    all_player_point = 0
+    print(i)
+    for indv_player in dream11_tables[0].columns:
+        for player in player_points_table['Player']:
+            if dream11_tables[0].iloc[indv_user][indv_player] == player:
+                player_point = player_points_table.loc[player_points_table['Player'] == player]['Points']
+                player_p = player_point.tolist()
+                if indv_player == 'Player 1 (Captain)':
+                    indv_player_point = player_p[0] * 2
+                elif indv_player == 'Player 2 (Vice Captain)':
+                    indv_player_point = player_p[0] * 1.5
+                else:
+                    indv_player_point = player_p[0]
+                all_player_point = all_player_point + indv_player_point
+                indv_player_point = 0
+    dream11_tables[0].iloc[indv_user]['Total_Points'] = all_player_point  
+    i += 1
+
+
+# In[120]:
+
+
+print(dream11_tables[0][dream11_tables[0]['User (Team)']=='TRex46206 (1)'].index.values)
+
+
+# In[104]:
+
+
+dream11_tables[0].iloc[59]
+
+
+# In[133]:
+
+
+dream11_tables[0].loc[dream11_tables[0]['User (Team)'] == 'TRex46206 (1)']['Total_Points']
+
+
+# In[116]:
+
+
+dream11_tables[0].iloc[132844]['Total_Points']
+
+
+# In[118]:
+
+
+dream11_tables[0] = dream11_tables[0].sort_values(by='Total_Points', ascending=False)
+
+
+# In[119]:
+
+
+dream11_tables[0] = dream11_tables[0].reset_index(drop=True)
+
+
+# In[136]:
+
+
+dream11_tables[0].head()
+
+
+# In[ ]:
+
+
+print(dream11_tables[0][dream11_tables[0]['User (Team)']=='TRex46206 (1)'].index.values)
+
+
+# In[134]:
+
+
+dream11_tables[0].loc[dream11_tables[0]['Total_Points'] == 532.5]
+
